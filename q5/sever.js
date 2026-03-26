@@ -18,7 +18,7 @@ db.serialize(() => {
         )
     `)
 
-    db.get("SELECT COUNT(*) AS count FROM users", (err, row) => {
+    db.get("SELECT * FROM users", (err, row) => {
 
         if (row.count === 0) {
 

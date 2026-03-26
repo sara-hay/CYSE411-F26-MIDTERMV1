@@ -18,17 +18,25 @@ let currentProfile = null;
 -------------------------- */
 
 function loadProfile() {
-
     const text = document.getElementById("profileInput").value;
-
-   
-    const profile = JSON.parse(text);
-
     currentProfile = profile;
+    try {
+        if (typeof text !== 'string') return null;
+        const profile = JSON.parse(text);
+        if (!profile || typeof profile !== 'object') return null;
+        if (typeof profile.displayName !== "string") return null;
+        if (profile.role !== "user" && profile.role !== "admin") return null;
+        if (!Array.isArray(profile.notifications)) return null;
+        const allStrings = profile.notifications.every(item => typeof item === "string");
+        if (!allStrings) return null;
 
-    renderProfile(profile);
+        return profile
+
+    } catch (error) {
+        return null;
+    }
 }
-
+    renderProfile(profile);
 
 /* -------------------------
    Render Profile
@@ -45,9 +53,8 @@ function renderProfile(profile) {
     for (let n of profile.notifications) {
 
         const li = document.createElement("li");
-
         
-        li.innerHTML = n;
+        li.textContent = n;
 
         list.appendChild(li);
     }
@@ -61,20 +68,35 @@ function renderProfile(profile) {
 function saveSession() {
     localStorage.setItem("profile", JSON.stringify(currentProfile));
 
+    if (!profile || typeof profile !== 'object') return;
+    const currentProfile = {
+        displayName: profile.displayName,
+        role: profile.role
+    }
     alert("Session saved");
 }
 
 
 function loadSession() {
-
-    const stored = localStorage.getItem("profile");
-
-    if (stored) {
-
+    try {
+        const stored = localStorage.getItem("profile");
+        if (!stored) return null;
         const profile = JSON.parse(stored);
+        if (
+            profile &&
+            typeof profile.displayName !== "string" &&
+            (profile.role === "user" || profile.role === "admin")
+        ) {
+            currentProfile = profile;
+            renderProfile(profile)
+            return {
+                currentProfile,
+            };
+        };
+            return null;
 
-        currentProfile = profile;
+    } catch (error) {
+        return null
+    };
 
-        renderProfile(profile);
-    }
 }
